@@ -106,11 +106,11 @@ ggplot(cleaned_industry_labor_data, aes(x = `Sectoral output_Millions of current
 This Cleveland dotplot shows the total output of each industry across each ownership class. We expected to see a difference in total output based on the type of ownership, however if the government is present in an industry they produce at approximately the same level as their private counterparts. The plot also highlights that the private sector is present in every observed industry. Out of the government types, local is present in the most industries, and state governments are the least directly involved in industry. 
 
 
-```{r}
+```{r, fig.height=10, fig.width=10}
 ggplot(cleaned_industry_labor_data, aes(x = `Average Weekly Wages`, y = reorder(Industry, `Sectoral output_Millions of current dollars`), color = Ownership)) +
-  geom_point(size = 3) +
-  labs(title = "Output by Labor Industry", 
-       x = "Output in Dollars", 
+  geom_point() +
+  labs(title = "Wages by Labor Industry", 
+       x = "Weekly Average Wage", 
        y = "Labor Industry") +
   facet_wrap(~ Ownership, ncol = 4) +theme(legend.position = "none")
 ```
