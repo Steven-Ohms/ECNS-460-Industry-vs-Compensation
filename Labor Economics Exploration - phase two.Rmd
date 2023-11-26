@@ -52,6 +52,9 @@ labor_productivity_2021_data = labor_productivity_data %>% #filters 2021 data
 
 industry_data_annual = industry_data %>% #filters Annual data for the industry data
   filter(Period == "Annual")
+
+industry_data_annual<-industry_data_annual|>
+  filter("NAICS" != 221) #remove a duplacite of utilities.
 ```
 
 
@@ -80,11 +83,38 @@ Now that we have all of the data cleaned, we should be ready to inner join. We w
 
 
 ```{r}
-industry_labor_data = inner_join(industry_data_separated, united_labor_productivity_data, by = "NAICS")
+t<-subset(industry_data_separated, industry_data_separated$NAICS==22)
 
+
+industry_aggregated <- industry_data_separated |>
+  group_by(NAICS) |>
+  summarise(
+    `# of Establishments` = sum(`# of Establishments`),
+    `Average Employment` = sum(`Average Employment`),
+    # `Average Weekly Wages` = sum(`Total Wages`/ `Average Employment`),
+    `Total Wages` = sum(`Total Wages`)
+  )
+
+joinTable<- industry_data_separated|>
+  select(c("ID","Area", "Period", "NAICS", "industry"))
+joinTable<-distinct(joinTable, NAICS, .keep_all = T)
+
+industry_aggregated<-left_join(industry_aggregated, joinTable, by = "NAICS")
+```
+
+
+
+```{r}
+industry_labor_data = inner_join(industry_aggregated, united_labor_productivity_data, by = "NAICS")
+
+
+industry_labor_data$`Average Salary` <- 52*40*industry_labor_data$`Total Wages`/(industry_labor_data$`Hours worked_Millions of hours`*1000000)
+
+cleaned_industry_labor_data<-industry_labor_data
 #Now we need to remove useless columns. We see a lot of repeat columns/columns with the same information 
 
-cleaned_industry_labor_data = industry_labor_data %>% select(-`Year (copy)`, -`PeriodCode (copy)`, -`Area (copy)`, -`Area`, -Year.x, -Year.y, -`Area Type Name`, -`State Name`, -Basis)
+
+cleaned_industry_labor_data$laborProductivity<-cleaned_industry_labor_data$`Sectoral output_Millions of current dollars`/cleaned_industry_labor_data$`Hours worked_Millions of hours`
 ```
 
 As we can see with this code, the data set's have been joined smoothly. However, due to this join, and previous filters, there becomes a lot of useless attributes. This includes the multiple year attributes (all 2021, no differences), Period (All annual since filtered, no need for duplicates), Area (all US, no differences), and the basis and state names also repeat the same values. With this all applicable steps of the data cleaning checklist have been completed. One final thing to note is that we do still have some missing values in our dataset, specifically when it comes to some of the percent change variables. We are deciding not to remove these rows/columns of data, as we already have enough data points, to where removing the columns entirely could cause us to miss potential connections, and removing the rows would remove way too much of our dataset to be worthwhile. When looking at converting variables to the right data type, we are lucky that everything is already properly assigned to their corresponding data type (strings are strings, numbers are numeric, etc). Because of the repeat NAICS, what was supposed to be our primary key, looking at our data, we now see that our primary key has changed to the ID attribute. Finally looking at all of our percent variables, we are lucky that they are all in the form of whole number percentages (5%), and not .05. It doesn't really matter either way, but it is nice that we don't have to do additional work to make sure all of the percent units are the same.
@@ -92,27 +122,44 @@ As we can see with this code, the data set's have been joined smoothly. However,
 We are now good to move on to making other inferences based off of our newly found Cleaned_industry_Labor_data
 
 
-
-
 ```{r, fig.height=10, fig.width=10}
-ggplot(cleaned_industry_labor_data, aes(x = `Sectoral output_Millions of current dollars`, y = reorder(Industry, `Sectoral output_Millions of current dollars`), color = Ownership)) +
-  geom_point() +
-  labs(title = "Output by Labor Industry", 
-       x = "Output in Dollars", 
-       y = "Labor Industry") +
-  facet_wrap(~ Ownership, ncol = 4) +theme(legend.position = "none")
+cleaned_industry_labor_data|>
+  arrange(laborProductivity)|>
+  ggplot(aes(x = `Average Salary`, y = reorder(Industry, laborProductivity))) +
+  geom_point() 
+
+cleaned_industry_labor_data|>
+  arrange(laborProductivity)|>
+  ggplot(aes(y = `Average Salary`, x =  laborProductivity)) +
+  geom_point() + geom_smooth(method = "lm")+geom_smooth()
+
+
+cleaned_industry_labor_data|>
+  arrange(laborProductivity)|>
+  ggplot(aes(y = log(`Average Salary`), x =  log(laborProductivity))) +
+  geom_point() + geom_smooth(method = "lm")+geom_smooth()
+
+
+ t <-cleaned_industry_labor_data|>
+   select("laborProductivity", "industry", "Average Salary", "Hours worked_Millions of hours", "Sectoral output_Millions of current dollars")
+
+  labs(title = "Wages by Labor Industry", 
+       x = "Weekly Average Wage", 
+       y = "Labor Industry")
 ```
 
 This Cleveland dotplot shows the total output of each industry across each ownership class. We expected to see a difference in total output based on the type of ownership, however if the government is present in an industry they produce at approximately the same level as their private counterparts. The plot also highlights that the private sector is present in every observed industry. Out of the government types, local is present in the most industries, and state governments are the least directly involved in industry. 
 
 
 ```{r, fig.height=10, fig.width=10}
-ggplot(cleaned_industry_labor_data, aes(x = `Average Weekly Wages`, y = reorder(Industry, `Sectoral output_Millions of current dollars`), color = Ownership)) +
+cleaned_industry_labor_data|>
+  arrange(`Sectoral output_Millions of current dollars`)|>
+  ggplot(aes(x = `Average Salary`, y = Industry)) +
   geom_point() +
   labs(title = "Wages by Labor Industry", 
        x = "Weekly Average Wage", 
-       y = "Labor Industry") +
-  facet_wrap(~ Ownership, ncol = 4) +theme(legend.position = "none")
+       y = "Labor Industry")
+
 ```
 
 This Cleveland doplot shows the Average Weekly wage, also by industry and type of ownership. The order of the Y axis was left to be in the same order as the previous dotplot, sorted by total output amount. This was in an attempt to observe a trend between the total sectoral output and average wage by comparing the two plots as one might expect one to be present. However, the average wage appears to have no relationship with the production of the industry. We will keep an eye out for any variables that are correlated with average wage. unlike the previous plot there are noticeable differences in our variable of interest across the types of ownership. There is not one ownership group that constantly pays more or less across all industries, however these differences could still be of interest.
@@ -130,26 +177,32 @@ ggplot(cleaned_industry_labor_data, aes(y = log(`Average Weekly Wages`), x = log
 
 To further explore the relationship, or lack thereof, between a sectors total output and its employees average wages a scatterplot was constructed with local regression lines to show trends, grouped by type of ownership. The data was log transformed to decluster the data, as both variables were heavily right skewed with a few high outliers. In addition the log transforms allow us to interpret the relationship in terms of relative shifts in total output which is useful when the levels of output have such a large range. This log-log transformation shows there is a noticeable difference in the relationship between the types of ownership. The confidence intervals of the local regression lines were removed, as they caused a high level of visual clutter. However they showed that, with 95% confidence, the right tail of private and local government trend up and for the fedral and state governments they trended down. 
   
+```{r}
+cleaned_industry_labor_data$`Labor Productivity`<- cleaned_industry_labor_data$`Sectoral output_Millions of current dollars`/ (cleaned_industry_labor_data$`Employment_Thousands of jobs`*1000)
+
+
+so<-cleaned_industry_labor_data$`Sectoral output_Millions of current dollars`*1000000
+emp<-cleaned_industry_labor_data$`Employment_Thousands of jobs`*1000
+
+ggplot(cleaned_industry_labor_data, aes(x = `Labor Productivity`, y = `Average Weekly Wages`))+geom_point()
+
+```
+
 
 ```{r}
-cleaned_industry_labor_data = cleaned_industry_labor_data %>% #Calculates marginal product
-  mutate(Marginal_Product = `Employment_% Change from previous year` / `Real sectoral output_% Change from previous year`)
 
+cleaned_industry_labor_data<-cleaned_industry_labor_data|>
+  mutate(Labor2020 = `Hours worked_Millions of hours`/ (1+ (`Hours worked_% Change from previous year`/100)))
 
+cleaned_industry_labor_data<-cleaned_industry_labor_data|>
+   mutate(Output2020 = `Sectoral output_Millions of current dollars` / (1 + (`Sectoral output_% Change from previous year`/100))) 
 
+cleaned_industry_labor_data$laborDif<- cleaned_industry_labor_data$`Hours worked_Millions of hours`-cleaned_industry_labor_data$Labor2020
+cleaned_industry_labor_data$ouputDif<- cleaned_industry_labor_data$`Sectoral output_Millions of current dollars` - cleaned_industry_labor_data$Output2020
 
-###Gets subsets of the data, for each ownership type
-cleaned_private_dig_industry_labor_data = cleaned_industry_labor_data %>%
-  filter(Ownership == "Private")
+cleaned_industry_labor_data<-cleaned_industry_labor_data|>
+  mutate(Marginal_Product = ouputDif / (laborDif))
 
-cleaned_local_gov_dig_industry_labor_data = cleaned_industry_labor_data %>%
-  filter(Ownership == "Local Government")
-
-cleaned_fed_gov_dig_industry_labor_data = cleaned_industry_labor_data %>%
-  filter(Ownership == "Federal Government")
-
-cleaned_state_gov_dig_industry_labor_data = cleaned_industry_labor_data %>%
-  filter(Ownership == "State Government")
 ```
 
 
@@ -158,36 +211,19 @@ This chunk of code does two things, firstly it calculated the marginal product f
 
 
 ```{r}
-ggplot(cleaned_industry_labor_data, aes(x = `Average Weekly Wages`, y = Marginal_Product, color = Ownership)) +
+ggplot(cleaned_industry_labor_data, aes(x = `Average Weekly Wages`, y = Marginal_Product)) +
   geom_point() +
-  labs(title = "Scatter Plot of Marginal Dist to average weekly wages", x = "Marginal_Product", y = "Average Weekly Wages")
+  labs(title = "Scatter Plot of Marginal Dist to average weekly wages", y = "Marginal_Product", x = "Average Weekly Wages")
 
+ggplot(cleaned_industry_labor_data, aes(x = laborProductivity, y = Marginal_Product)) +
+  geom_point() +geom_smooth(method = "lm")
+
+  labs(title = "Scatter Plot of Marginal Dist to average weekly wages", y = "Marginal_Product", x = "Average Weekly Wages")
 ```
 
 When viewing the resulting graph, we don't see any noticable trends. We would expect to see something like as average weekly wages increase, so does the marginal product, but we see no such trend. We tested marginal product against a variety of other attributes as well, including Average employment, and total wages, but saw no such trends in any of them. However, if we look closesly at the graph, it seems like a majority of the strong negative marginal distribution values found are all from the private sector, so we did some more investigating.
 
-```{r}
-average_marginal_product_sg = cleaned_state_gov_dig_industry_labor_data %>%
-  summarize(Average_Marginal_Product = mean(Marginal_Product))
 
-average_marginal_product_fg = cleaned_fed_gov_dig_industry_labor_data %>%
-  summarize(Average_Marginal_Product = mean(Marginal_Product))
-
-average_marginal_product_lg = cleaned_local_gov_dig_industry_labor_data %>%
-  summarize(Average_Marginal_Product = mean(Marginal_Product))
-
-average_marginal_product_p = cleaned_private_dig_industry_labor_data %>%
-  summarize(Average_Marginal_Product = mean(Marginal_Product))
-
-average_marginal_product = cleaned_industry_labor_data %>%
-  summarize(Average_Marginal_Product = mean(Marginal_Product))
-
-average_marginal_product_sg
-average_marginal_product_fg
-average_marginal_product_lg
-average_marginal_product_p
-average_marginal_product
-```
 Here we calculate the average marginal product for each of the different sectors, and all of the sectors combined. Here we see that the average marginal product is positive for every sector except the private sector. We don't know exactly why this is the case, but one hypothesis that we have is that since these values are calculated by the change from the previous year (and in this case the previous year is 2020, ie the covid year), that this could have messed with the private sector quite a bit, whereas the public sector was affected nowhere near as much. Other than that, we see that the overall marginal product of labor is negative. This is probably due to the large number of outliers shown in the private sector dataset, skewing the overall marginal product to being negative.
 
 
