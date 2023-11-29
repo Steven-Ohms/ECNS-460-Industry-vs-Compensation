@@ -14,6 +14,8 @@ Data Analysis Project: Assessing Industry Productivity and Worker Compensation i
 Topic Description:
 This project aims to assess relationships and trends between industry productivity and worker compensation for the year 2021. Productivity measures the efficiency of industries in generating economic output, while worker compensation reflects the wages received by employees. The findings of this project may offer insights between industry productivity and worker compensation. 
 
+The reason why we focused on just the year of 2021 is for 3 reasons. First is that the Industry employment dataset that we used has values primarily from 2021, and because of this inferences from this dataset can only be made in 2021. Next is that 2021 is an interesting year in general, marking the sort of comeback/return to normalcy from the 2020 pandemic. Finally, if we were to look across multiple years, the scope of this project would increase in size exponentially, and it would become unrealistic to do the in-depth analysis we wanted. These are the reasons why we decided to focus on the year 2021 in this project.
+
 Motivation:
 Analyzing the relationship between industry productivity and worker compensation could provide useful information for policymakers, labor organizations, and businesses. The findings of this project can allow for better informed economic decisions to be made, specifically in relation to labor market policies, wage negotiations, and economic development initiatives. Furthermore, the prospect of having access to this much data, can not only provide useful insights, but also seems very exciting.
 
