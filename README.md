@@ -2,7 +2,7 @@
 This is a repository for the ECNS 460 Final project about the industry productivity, vs workers compensation by industry. We plan on looking into relationships between these two datasets to see if there are any trends between productivity and compensation, by industry, and other useful insights.
 
 ECNS 460
-Phase 1
+Final Submission
 Hans Petersen
 Steven Ohms
 10/11/2023
@@ -23,14 +23,19 @@ Is there a relationship between productivity and worker compensation, and if so,
 Which industries stand out as outliers in terms of productivity and worker compensation compared to the industry averages?
 
 Datasets:
-Dataset 1: Labor productivity and costs measures; Detailed industries (URL)
+
+Dataset 1: Labor productivity and costs measures; Detailed industries ([URL](https://www.bls.gov/productivity/tables/))
+Source: US Bureau of Labor Statistics (From bls.gov)
 Variables: Labor Productivity, Unit Labor Costs, Sectoral Output.
 Coverage: United States, 1987 - 2022
 Description: This dataset provides industry-level economic data, focusing on measures of productivity.
-Dataset 2: Industry Employment and Wages - QCEW (URL)
+
+Dataset 2: Industry Employment and Wages - QCEW ([URL](https://dataportal.mt.gov/t/DLILMIPub/views/DS-IndustryEmployment_15851453253930/DS-IndustryEmployment?State=Montana&iframeSizedToWindow=true&%3Aembed=y&%3AshowAppBanner=false&%3Adisplay_count=n&%3AshowVizHome=n&%3Aorigin=viz_share_link))
+Source: Montana Data Portal (From Montana.Gov)
 Variables: Industry, Ownership (government or private), Average number of Employees, Average Weekly Wage.
 Coverage: United States, 2021
-Description: This dataset contains information on worker compensation by industry, 
+Description: This dataset contains information on worker compensation by industry
+
 
 Dataset Relationship:
 The first dataset, Industry Productivity Data, offers insights into the productivity of United States industries. This data is then analyzed alongside the Worker Compensation Data, which provides details about worker compensation within these industries. By comparing the two datasets, we can evaluate the connection between industry productivity and worker compensation in the United States. The Industry Employment and wages dataset contains data from only 2021, we would have to trim the data from the Labor Productivity to match the 2021 timeframe. This in turn would also make our data purely cross-sectional, and not a combination of time series, and cross sectional. In order to inner join the dataset, we would have to join by industry. One tricky thing that will need to be done when cleaning is to group the industry attribute so that we can join on these values, as they are labeled differently in each dataset. 
