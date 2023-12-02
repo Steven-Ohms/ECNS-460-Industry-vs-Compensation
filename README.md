@@ -20,22 +20,34 @@ Motivation:
 Analyzing the relationship between industry productivity and worker compensation could provide useful information for policymakers, labor organizations, and businesses. The findings of this project can allow for better informed economic decisions to be made, specifically in relation to labor market policies, wage negotiations, and economic development initiatives. Furthermore, the prospect of having access to this much data, can not only provide useful insights, but also seems very exciting.
 
 Research Questions:
+
 How does industry productivity vary across different sectors in the US in 2021?
+
 Is there a relationship between productivity and worker compensation, and if so, how is it shaped?
+
 Which industries stand out as outliers in terms of productivity and worker compensation compared to the industry averages?
+
 
 Datasets:
 
 Dataset 1: Labor productivity and costs measures; Detailed industries ([URL](https://www.bls.gov/productivity/tables/))
+
 Source: US Bureau of Labor Statistics (From bls.gov)
+
 Variables: Labor Productivity, Unit Labor Costs, Sectoral Output.
+
 Coverage: United States, 1987 - 2022
+
 Description: This dataset provides industry-level economic data, focusing on measures of productivity.
 
 Dataset 2: Industry Employment and Wages - QCEW ([URL](https://dataportal.mt.gov/t/DLILMIPub/views/DS-IndustryEmployment_15851453253930/DS-IndustryEmployment?State=Montana&iframeSizedToWindow=true&%3Aembed=y&%3AshowAppBanner=false&%3Adisplay_count=n&%3AshowVizHome=n&%3Aorigin=viz_share_link))
+
 Source: Montana Data Portal (From Montana.Gov)
+
 Variables: Industry, Ownership (government or private), Average number of Employees, Average Weekly Wage.
+
 Coverage: United States, 2021
+
 Description: This dataset contains information on worker compensation by industry
 
 
