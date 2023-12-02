@@ -213,7 +213,7 @@ fig4<-ggplot(cleaned_industry_labor_data, aes(y = `Average Salary`, x = Marginal
   geom_point() +
   labs(title = "Marginal Product of Labor to Average Salary", x = "Marginal Product of Labor", y = "Average Salary")
 fig4
-ggsave("fig4.png",fig4)
+ggsave("fig4.png", fig4, width = 10, height = 8)
 
 #create a dataset without industries that are outliers in labor productivity and labor
 noOutlier<-subset(cleaned_industry_labor_data, cleaned_industry_labor_data$NAICS!= 324 & cleaned_industry_labor_data$NAICS!= 447)
